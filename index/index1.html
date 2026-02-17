@@ -8,33 +8,59 @@
   <link rel="stylesheet" href="/css/index1.css">
 </head>
 <body>
-  <div class="welcome">
-    <h1></h1>
+  <div 
+    class="welcome">
+    <h1>
+      
+    </h1>
   </div>
-        <div class="content">
-          <form class="form1">
-              <p class="welcome-text">
-            ¡WELCOME!
-          </p>
-            <input 
-              type="email"
-              id="email"
-              required
-              placeholder="Email"/>
-            <input 
-              type="password"
-              placeholder="Password"/>
-          <div class="form-buttons">
-            <button type="submit"class="btn-primary">
-                Sign In
-            </button>
-            <button type="button" class="btn-secundary">
-                Register
-            </button>
+      <div class="content">
+      <form class="form1" novalidate>
+        <p class="welcome-text">
+          ¡WELCOME!
+        </p>
+        <input 
+          type="email"
+          id="email"
+          required
+          placeholder="Email"/>
+          <small 
+            class="error-text"
+            id="email-error"></small>
+        <input 
+          type="password"
+          id="password"
+          required
+          minlength="8"
+          placeholder="Password"/>
+          <div class="password-strength">
           </div>
-          </form>
+          <small
+            class="error-text"
+            id="pass-error"></small>
+        <div 
+          class="form-buttons">
+          <button 
+            type="submit"
+            class="btn-primary"
+            id="btnLogin">
+              Sign In
+          </button>
+          <button 
+            type="button"
+            class="btn-secundary">
+              Register
+          </button>
         </div>
-        <script src="/scripts/index1.js"></script>
+        <p 
+          class="form-status" 
+          id="form.status">
+        </p>
+      </form>
+      </div>
+      <script 
+        src="/scripts/index1.js">
+      </script>
 </body>
 
 </html>
