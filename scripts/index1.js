@@ -4,6 +4,29 @@ const MAX_ATTEMPTS = 3;
 const LOCK_TIME = 15000; // 15 segundos
 let isLocked = false;
 
+//Back-end structury
+const AuthService = {
+  login(email, password) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const fakeUser = {
+          email: "test@email.com",
+          password: "12345678"
+        };
+        
+        if (email === fakeUser.email && password === fakeUser.password) {
+          resolve({
+            token: "fake-jwt-token",
+            user: { email }
+          });
+        } else {
+          reject("Invalid Email or Password");
+        }
+      }, 1400);
+    });
+  }
+};
+
 //Welcome
   document.addEventListener("DOMContentLoaded", () => {
   
@@ -98,79 +121,71 @@ let isLocked = false;
     });
   }
   
+              //SUBMIT
 //Loading BTN
-  form.addEventListener("submit", (e) => {
+ form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  if (!form.checkValidity() || isLocked) return;
+  if (!form.checkValidity()) return;
   
+//UI loading
   form.classList.add("is-loading");
   btnLogin.classList.add("loading");
   btnLogin.disabled = true;
   btnLogin.textContent = "Verifying...";
   
-  setTimeout(() => {
-    const email = emailInput.value;
-    const password = passwordInput.value;
+  try {
+    const result = await AuthService.login(
+      emailInput.value,
+      passwordInput.value
+    );
     
-    const fakeEmail = "test@email.com";
-    const fakePassword = "12345678";
+//SUCCESS
+    btnLogin.textContent = "Success ✓";
     
-    if (email === fakeEmail && password === fakePassword) {
-      btnLogin.textContent = "Success ✓";
-      
-      const dashboard = document.querySelector(".dashboard");
-      form.classList.add("exit");
-      
-      setTimeout(() => {
-        form.style.display = "none";
-        dashboard.classList.add("show");
-      }, 600);
-    } else {
-//Error
-      loginAttempts++;
-      
-      form.classList.remove("is-loading");
-      btnLogin.classList.remove("loading");
-      btnLogin.disabled = false;
-      btnLogin.textContent = "Invalid credentials";
-      
-      form.classList.add("shake");
-      setTimeout(() => form.classList.remove("shake"), 400);
-      
-//Block
-      if (loginAttempts >= MAX_ATTEMPTS) {
-        isLocked = true;
-        btnLogin.textContent = "Too many attempts";
-        btnLogin.disabled = true;
-        
-        setTimeout(() => {
-          loginAttempts = 0;
-          isLocked = false;
-          btnLogin.disabled = false;
-          btnLogin.textContent = "Sign In";
-        }, LOCK_TIME);
-      }
-    }
-  }, 1600);
+    const dashboard = document.querySelector(".dashboard");
+    form.classList.add("exit");
+    
+    setTimeout(() => {
+      form.style.display = "none";
+      dashboard.classList.add("show");
+    }, 600);
+    
+    console.log("TOKEN:", result.token);
+    
+  } catch (error) {
+//ERROR
+    form.classList.remove("is-loading");
+    btnLogin.classList.remove("loading");
+    btnLogin.disabled = false;
+    btnLogin.textContent = error;
+    
+    form.classList.add("shake");
+    setTimeout(() => form.classList.remove("shake"), 400);
+  }
 });
+ 
 //Passw Security Show Bar
-  const strengthBar = document.querySelector(".password-strength");
-  if (!strengthBar) return;
+const strengthBar = document.querySelector(".password-strength");
+
+if (strengthBar) {
   passwordInput.addEventListener("input", () => {
     const value = passwordInput.value;
     let strength = 0;
-//Show Bar
+    
     if (value.length > 0) {
       strengthBar.classList.add("visible");
     } else {
       strengthBar.className = "password-strength";
       return;
     }
+    
     if (value.length >= 8) strength++;
     if (/[A-Z]/.test(value)) strength++;
     if (/[0-9]/.test(value)) strength++;
     if (/[^A-Za-z0-9]/.test(value)) strength++;
+    
     strengthBar.className = "password-strength visible";
+    
     if (strength <= 1) {
       strengthBar.classList.add("weak");
     } else if (strength <= 3) {
@@ -179,4 +194,5 @@ let isLocked = false;
       strengthBar.classList.add("strong");
     }
   });
+}
 });
