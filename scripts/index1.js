@@ -4,28 +4,6 @@ const MAX_ATTEMPTS = 3;
 const LOCK_TIME = 15000; // 15 segundos
 let isLocked = false;
 
-//Back-end structury
-const AuthService = {
-  login(email, password) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const fakeUser = {
-          email: "test@email.com",
-          password: "12345678"
-        };
-        
-        if (email === fakeUser.email && password === fakeUser.password) {
-          resolve({
-            token: "fake-jwt-token",
-            user: { email }
-          });
-        } else {
-          reject("Invalid Email or Password");
-        }
-      }, 1400);
-    });
-  }
-};
 
 //Welcome
   document.addEventListener("DOMContentLoaded", () => {
@@ -125,21 +103,34 @@ const AuthService = {
 //Loading BTN
  form.addEventListener("submit", async (e) => {
   e.preventDefault();
+  
   if (!form.checkValidity()) return;
   
-//UI loading
+  // UI loading
   form.classList.add("is-loading");
   btnLogin.classList.add("loading");
   btnLogin.disabled = true;
   btnLogin.textContent = "Verifying...";
   
   try {
-    const result = await AuthService.login(
-      emailInput.value,
-      passwordInput.value
-    );
+    const response = await fetch("http://localhost:3000/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: emailInput.value,
+        password: passwordInput.value
+      })
+    });
     
-//SUCCESS
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || "Invalid credentials");
+    }
+    
+    // SUCCESS
     btnLogin.textContent = "Success ✓";
     
     const dashboard = document.querySelector(".dashboard");
@@ -150,19 +141,27 @@ const AuthService = {
       dashboard.classList.add("show");
     }, 600);
     
-    console.log("TOKEN:", result.token);
-    
   } catch (error) {
-//ERROR
+    // ERROR
     form.classList.remove("is-loading");
     btnLogin.classList.remove("loading");
     btnLogin.disabled = false;
-    btnLogin.textContent = error;
+    btnLogin.textContent = error.message;
     
     form.classList.add("shake");
     setTimeout(() => form.classList.remove("shake"), 400);
   }
+  
+  fetch("http://localhost:3000/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    email,
+    password
+  })
+})
 });
+ 
  
 //Passw Security Show Bar
 const strengthBar = document.querySelector(".password-strength");
@@ -195,4 +194,5 @@ if (strengthBar) {
     }
   });
 }
+
 });
