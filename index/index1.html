@@ -56,45 +56,48 @@
         </div>
       </form>
       
-      
-      
-      <form class="form1 register-form" style="display:none" novalidate>
 
-  <p class="welcome-text">Register</p>
+
+<form class="form1 register-form" style="display:none;" novalidate>
+  <p class="welcome-text">Create Account</p>
 
   <input
     type="email"
     id="reg-email"
     required
-    placeholder="Email">
+    placeholder="Email" />
+  <small class="error-text" id="reg-email-error"></small>
 
   <input
     type="password"
     id="reg-password"
     required
     minlength="8"
-    placeholder="Password">
+    placeholder="Password" />
+  <small class="error-text" id="reg-pass-error"></small>
 
   <input
     type="password"
     id="reg-confirm"
     required
     minlength="8"
-    placeholder="Confirm Password">
+    placeholder="Confirm Password" />
+  <small class="error-text" id="reg-confirm-error"></small>
 
   <small class="error-text" id="reg-error"></small>
 
   <div class="form-buttons">
     <button type="submit" class="btn-primary">
-      Create Account
+      Register
     </button>
-
     <button type="button" class="btn-secundary" id="back-login">
       Back
     </button>
   </div>
-
 </form>
+      
+      
+      
       <div class="dashboard">
         <h2>
           ¡Welcome Back!

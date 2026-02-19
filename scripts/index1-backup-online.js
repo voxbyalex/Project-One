@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   const form = document.querySelector(".form1"); // LOGIN
   const btnLogin = document.querySelector(".btn-primary");
-  const registerBtn = document.querySelector(".btn-secundary");
+  const registerBtn = document.getElementById("show-register");
   
   const registerForm = document.querySelector(".register-form");
   const backLoginBtn = document.getElementById("back-login");
@@ -37,6 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
   
   const emailError = document.getElementById("email-error");
   const passwordError = document.getElementById("pass-error");
+  
+  const dashboard = document.querySelector(".dashboard");
   
   // ================== WELCOME ANIMATION ==================
   if (welcome && textElement) {
@@ -113,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   
   // ================== LOGIN ==================
-  form.addEventListener("submit", e => {
+  form.addEventListener("submit", async e => {
     e.preventDefault();
     if (!form.checkValidity()) return;
     
@@ -121,33 +123,38 @@ document.addEventListener("DOMContentLoaded", () => {
     btnLogin.textContent = "Verifying...";
     form.classList.add("is-loading");
     
-    const savedUser = JSON.parse(localStorage.getItem("registeredUser"));
-    
-    setTimeout(() => {
-      if (
-        savedUser &&
-        emailInput.value === savedUser.email &&
-        passwordInput.value === savedUser.password
-      ) {
-        btnLogin.textContent = "Success ✓";
-        form.classList.add("exit");
-        
-        setTimeout(() => {
-          form.style.display = "none";
-          document.querySelector(".dashboard").classList.add("show");
-        }, 600);
-      } else {
-        btnLogin.disabled = false;
-        btnLogin.textContent = "Sign In";
-        form.classList.remove("is-loading");
-        
-        loginError.textContent = "Invalid Email or Password";
-        loginError.classList.add("show");
-        
-        form.classList.add("shake");
-        setTimeout(() => form.classList.remove("shake"), 400);
-      }
-    }, 1200);
+    try {
+      const res = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: emailInput.value,
+          password: passwordInput.value
+        })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      
+      btnLogin.textContent = "Success ✓";
+      form.classList.add("exit");
+      
+      setTimeout(() => {
+        form.style.display = "none";
+        dashboard.classList.add("show");
+      }, 600);
+      
+    } catch (err) {
+      btnLogin.disabled = false;
+      btnLogin.textContent = "Sign In";
+      form.classList.remove("is-loading");
+      
+      loginError.textContent = err.message;
+      loginError.classList.add("show");
+      
+      form.classList.add("shake");
+      setTimeout(() => form.classList.remove("shake"), 400);
+    }
   });
   
   // ================== MOSTRAR REGISTER ==================
@@ -163,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   
   // ================== REGISTER ==================
-  registerForm.addEventListener("submit", e => {
+  registerForm.addEventListener("submit", async e => {
     e.preventDefault();
     
     const email = document.getElementById("reg-email").value;
@@ -177,14 +184,24 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     
-    localStorage.setItem(
-      "registeredUser",
-      JSON.stringify({ email, password })
-    );
-    
-    error.textContent = "";
-    registerForm.style.display = "none";
-    form.style.display = "flex";
+    try {
+      const res = await fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      
+      error.textContent = "";
+      registerForm.style.display = "none";
+      form.style.display = "flex";
+      
+    } catch (err) {
+      error.textContent = err.message;
+      error.classList.add("show");
+    }
   });
   
   // ================== PASSWORD STRENGTH ==================

@@ -190,7 +190,7 @@ body{
   transform: translateY(-6px);
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.loging-erro.show{
+.loging-error.show{
   opacity: 1;
   transform: translateY(0);
 }
@@ -304,7 +304,4 @@ body{
   60% { transform: translateX(-4px); }
   80% { transform: translateX(4px); }
   100% { transform: translateX(0); }
-}
-.form1.shake{
-  animation: shake 0.35s ease;
 }

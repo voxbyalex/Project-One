@@ -7,76 +7,114 @@ let isLocked = false;
 // ================== DOM READY ==================
 document.addEventListener("DOMContentLoaded", () => {
   
-  // ELEMENTOS
+  // ---------- ELEMENTOS ----------
   const welcome = document.querySelector(".welcome");
   const textElement = welcome?.querySelector("h1");
   const content = document.querySelector(".content");
   
-  const form = document.querySelector(".form1");
+  const form = document.querySelector(".form1"); // LOGIN
   const btnLogin = document.querySelector(".btn-primary");
   const registerBtn = document.getElementById("show-register");
   
-//EMAIL VALIDATION
+  const registerForm = document.querySelector(".register-form");
+  const backLoginBtn = document.getElementById("back-login");
+  
+  // EMAIL VALIDATION
   const emailInput = document.getElementById("email");
-//PASS VALIDATION
+  
+  // PASS VALIDATION
   const passwordInput = document.getElementById("password");
   
-  
-//CODIGO NUEVO
+  // LOGIN ERROR
   const loginError = document.getElementById("login-error");
-
-[emailInput, passwordInput].filter(Boolean).forEach(input =>  {
-  input.addEventListener("input", () => {
-    loginError.classList.remove("show");
-    loginError.textContent = "";
-  });
-});
   
+  [emailInput, passwordInput].filter(Boolean).forEach(input => {
+    input.addEventListener("input", () => {
+      loginError.classList.remove("show");
+      loginError.textContent = "";
+    });
+  });
   
   const emailError = document.getElementById("email-error");
   const passwordError = document.getElementById("pass-error");
   
   const dashboard = document.querySelector(".dashboard");
   
-  // ================== WELCOME ==================
+  // ================== WELCOME ANIMATION ==================
   if (welcome && textElement) {
     const text = "¡WELCOME!";
     let index = 0;
     
-    (function typeEffect() {
+    function typeEffect() {
       if (index < text.length) {
-        textElement.textContent += text[index++];
+        textElement.textContent += text.charAt(index++);
         setTimeout(typeEffect, 120);
       } else {
         setTimeout(() => welcome.classList.add("ocultar"), 1000);
         setTimeout(() => welcome.remove(), 2500);
       }
-    })();
+    }
     
+    typeEffect();
     setTimeout(() => content.classList.add("mostrar"), 3600);
   }
   
   // ================== VALIDACIONES ==================
+  emailInput.addEventListener("invalid", () => {
+    emailInput.setCustomValidity("Please enter a valid email address");
+    emailError.textContent = "Please enter a valid email address";
+    emailError.classList.add("show");
+    emailInput.classList.add("input-error");
+  });
+  
   emailInput.addEventListener("input", () => {
+    emailInput.setCustomValidity("");
     emailError.textContent = "";
     emailError.classList.remove("show");
     emailInput.classList.remove("input-error");
   });
   
+  passwordInput.addEventListener("invalid", () => {
+    passwordInput.setCustomValidity("Password must be at least 8 characters");
+    passwordError.textContent = "Password must be at least 8 characters";
+    passwordError.classList.add("show");
+    passwordInput.classList.add("input-error");
+  });
+  
   passwordInput.addEventListener("input", () => {
+    passwordInput.setCustomValidity("");
     passwordError.textContent = "";
     passwordError.classList.remove("show");
     passwordInput.classList.remove("input-error");
   });
   
-  // ================== PARALLAX ==================
+  // ================== PARALLAX (LOGIN + REGISTER) ==================
+  const forms = document.querySelectorAll(".form1");
+  
   document.addEventListener("mousemove", e => {
-    const x = (e.clientX / window.innerWidth - 0.5) * 20;
-    const y = (e.clientY / window.innerHeight - 0.5) * 20;
-    form.style.transform = `translate(${x}px, ${y}px)`;
+    forms.forEach(f => {
+      if (
+        f.classList.contains("is-loading") ||
+        f.classList.contains("shake") ||
+        f.classList.contains("exit") ||
+        f.style.display === "none"
+      ) return;
+      
+      const rect = f.getBoundingClientRect();
+      const x = (e.clientX - rect.left - rect.width / 2) / 18;
+      const y = (e.clientY - rect.top - rect.height / 2) / 18;
+      
+      f.style.transform = `translate(${x}px, ${y}px)`;
+    });
   });
   
-  // ================== LOGIN SUBMIT ==================
+  document.addEventListener("mouseleave", () => {
+    forms.forEach(f => {
+      f.style.transform = "translate(0,0)";
+    });
+  });
+  
+  // ================== LOGIN ==================
   form.addEventListener("submit", async e => {
     e.preventDefault();
     if (!form.checkValidity()) return;
@@ -106,87 +144,84 @@ document.addEventListener("DOMContentLoaded", () => {
         dashboard.classList.add("show");
       }, 600);
       
+    } catch (err) {
+      btnLogin.disabled = false;
+      btnLogin.textContent = "Sign In";
+      form.classList.remove("is-loading");
+      
+      loginError.textContent = err.message;
+      loginError.classList.add("show");
+      
+      form.classList.add("shake");
+      setTimeout(() => form.classList.remove("shake"), 400);
     }
-    catch (error) {
-  form.classList.remove("is-loading");
-  btnLogin.classList.remove("loading");
-  btnLogin.disabled = false;
-  btnLogin.textContent = "Sign In";
+  });
   
-  const loginError = document.getElementById("login-error");
-  loginError.textContent = error.message || error;
-  loginError.classList.add("show");
+  // ================== MOSTRAR REGISTER ==================
+  registerBtn.addEventListener("click", () => {
+    form.style.display = "none";
+    registerForm.style.display = "flex";
+  });
   
-  form.classList.add("shake");
-  setTimeout(() => form.classList.remove("shake"), 400);
-}
+  // ================== VOLVER LOGIN ==================
+  backLoginBtn.addEventListener("click", () => {
+    registerForm.style.display = "none";
+    form.style.display = "flex";
   });
   
   // ================== REGISTER ==================
-  const registerForm = document.querySelector(".register-form");
-const backLoginBtn = document.getElementById("back-login");
-
-// Mostrar formulario de registro
-registerBtn.addEventListener("click", () => {
-  form.style.display = "none";
-  registerForm.style.display = "flex";
-});
-
-// Volver al login
-backLoginBtn.addEventListener("click", () => {
-  registerForm.style.display = "none";
-  form.style.display = "flex";
-});
-
-// Submit register
-registerForm.addEventListener("submit", async e => {
-  e.preventDefault();
-  
-  const email = document.getElementById("reg-email").value;
-  const password = document.getElementById("reg-password").value;
-  const confirm = document.getElementById("reg-confirm").value;
-  const error = document.getElementById("reg-error");
-  
-  if (password !== confirm) {
-    error.textContent = "Passwords do not match";
-    error.classList.add("show");
-    return;
-  }
-  
-  try {
-    const res = await fetch("/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
+  registerForm.addEventListener("submit", async e => {
+    e.preventDefault();
     
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
+    const email = document.getElementById("reg-email").value;
+    const password = document.getElementById("reg-password").value;
+    const confirm = document.getElementById("reg-confirm").value;
+    const error = document.getElementById("reg-error");
     
-    registerForm.style.display = "none";
-    form.style.display = "flex";
-    error.textContent = "";
+    if (password !== confirm) {
+      error.textContent = "Passwords do not match";
+      error.classList.add("show");
+      return;
+    }
     
-  } catch (err) {
-    error.textContent = err.message;
-    error.classList.add("show");
-  }
-});
+    try {
+      const res = await fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      
+      error.textContent = "";
+      registerForm.style.display = "none";
+      form.style.display = "flex";
+      
+    } catch (err) {
+      error.textContent = err.message;
+      error.classList.add("show");
+    }
+  });
   
   // ================== PASSWORD STRENGTH ==================
   const strengthBar = document.querySelector(".password-strength");
+  
   if (strengthBar) {
     passwordInput.addEventListener("input", () => {
+      const value = passwordInput.value;
       let strength = 0;
-      const v = passwordInput.value;
       
-      if (!v) return (strengthBar.className = "password-strength");
+      if (!value) {
+        strengthBar.className = "password-strength";
+        return;
+      }
       
       strengthBar.classList.add("visible");
-      if (v.length >= 8) strength++;
-      if (/[A-Z]/.test(v)) strength++;
-      if (/[0-9]/.test(v)) strength++;
-      if (/[^A-Za-z0-9]/.test(v)) strength++;
+      if (value.length >= 8) strength++;
+      if (/[A-Z]/.test(value)) strength++;
+      if (/[0-9]/.test(value)) strength++;
+      if (/[^A-Za-z0-9]/.test(value)) strength++;
       
       strengthBar.className = "password-strength visible";
       strength <= 1 ?
