@@ -19,6 +19,7 @@
         <p class="welcome-text">
           ¡WELCOME!
         </p>
+        <small id="login-error" class="error-text"></small>
         <input 
           type="email"
           id="email"
@@ -53,6 +54,46 @@
           </button>
         </div>
       </form>
+      
+      
+      
+      <form class="form1 register-form" style="display:none" novalidate>
+
+  <p class="welcome-text">Register</p>
+
+  <input
+    type="email"
+    id="reg-email"
+    required
+    placeholder="Email">
+
+  <input
+    type="password"
+    id="reg-password"
+    required
+    minlength="8"
+    placeholder="Password">
+
+  <input
+    type="password"
+    id="reg-confirm"
+    required
+    minlength="8"
+    placeholder="Confirm Password">
+
+  <small class="error-text" id="reg-error"></small>
+
+  <div class="form-buttons">
+    <button type="submit" class="btn-primary">
+      Create Account
+    </button>
+
+    <button type="button" class="btn-secundary" id="back-login">
+      Back
+    </button>
+  </div>
+
+</form>
       <div class="dashboard">
         <h2>
           ¡Welcome Back!

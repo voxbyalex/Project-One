@@ -1,170 +1,176 @@
-//Variables
+// ================== VARIABLES ==================
 let loginAttempts = 0;
 const MAX_ATTEMPTS = 3;
-const LOCK_TIME = 15000; // 15 segundos
+const LOCK_TIME = 15000;
 let isLocked = false;
 
-//Back-end structury
-const AuthService = {
-  login(email, password) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const fakeUser = {
-          email: "test@email.com",
-          password: "12345678"
-        };
-        
-        if (email === fakeUser.email && password === fakeUser.password) {
-          resolve({
-            token: "fake-jwt-token",
-            user: { email }
-          });
-        } else {
-          reject("Invalid Email or Password");
-        }
-      }, 1400);
-    });
-  }
-};
-
-//Welcome
+// ================== DOM READY ==================
 document.addEventListener("DOMContentLoaded", () => {
   
+  // ---------- ELEMENTOS ----------
   const welcome = document.querySelector(".welcome");
-  if (!welcome) return;
-  const textElement = welcome.querySelector("h1");
-  
-  const text = "¡WELCOME!";
-  let index = 0;
-  const speed = 120;
-  
-  function typeEffect() {
-    if (index < text.length) {
-      textElement.textContent += text.charAt(index);
-      index++;
-      setTimeout(typeEffect, speed);
-    } else {
-      setTimeout(() => {
-        welcome.classList.add("ocultar");
-      }, 1000);
-      
-      setTimeout(() => {
-        welcome.remove();
-      }, 2500);
-    }
-  }
-  typeEffect();
+  const textElement = welcome?.querySelector("h1");
   const content = document.querySelector(".content");
-  setTimeout(() => {
-    content.classList.add("mostrar");
-  }, 3600);
   
-  //Email Validation
+  const form = document.querySelector(".form1");
+  const btnLogin = document.querySelector(".btn-primary");
+  const registerBtn = document.querySelector(".btn-secundary");
+  
+  const registerForm = document.querySelector(".register-form");
+  const backLoginBtn = document.getElementById("back-login");
+  
+  
+//EMAIL VALIDATION
   const emailInput = document.getElementById("email");
-  emailInput.addEventListener("invalid", () => {
-    emailInput.setCustomValidity("Please enter a valid email address");
-  });
-  emailInput.addEventListener("input", () => {
-    emailInput.setCustomValidity("");
-  });
   
-  //Passw Validation
+//PASS VALIDATION
   const passwordInput = document.getElementById("password");
   
-  passwordInput.addEventListener("invalid", () => {
-    if (passwordInput.value.length < 8) {
-      passwordInput.setCustomValidity("Password must be at least 8 characters");
-    }
+//NUEVO
+const loginError = document.getElementById("login-error");
+
+[emailInput, passwordInput].filter(Boolean).forEach(input =>  {
+  input.addEventListener("input", () => {
+    loginError.classList.remove("show");
+    loginError.textContent = "";
   });
+});
+
   
-  //          Incorrects Validations
   const emailError = document.getElementById("email-error");
   const passwordError = document.getElementById("pass-error");
   
-  //Email
+  // ================== WELCOME ANIMATION ==================
+  if (welcome && textElement) {
+    const text = "¡WELCOME!";
+    let index = 0;
+    
+    function typeEffect() {
+      if (index < text.length) {
+        textElement.textContent += text.charAt(index++);
+        setTimeout(typeEffect, 120);
+      } else {
+        setTimeout(() => welcome.classList.add("ocultar"), 1000);
+        setTimeout(() => welcome.remove(), 2500);
+      }
+    }
+    
+    typeEffect();
+    setTimeout(() => content.classList.add("mostrar"), 3600);
+  }
+  
+  // ================== VALIDACIONES ==================
   emailInput.addEventListener("invalid", () => {
+    emailInput.setCustomValidity("Please enter a valid email address");
     emailError.textContent = "Please enter a valid email address";
     emailError.classList.add("show");
     emailInput.classList.add("input-error");
   });
+  
   emailInput.addEventListener("input", () => {
+    emailInput.setCustomValidity("");
     emailError.textContent = "";
     emailError.classList.remove("show");
     emailInput.classList.remove("input-error");
   });
   
-  //Passw
   passwordInput.addEventListener("invalid", () => {
-    if (passwordInput.value.length < 8) {
-      passwordError.textContent = "Password must be at least 8 characters";
-      passwordError.classList.add("show");
-      passwordInput.classList.add("input-error");
-    }
+    passwordInput.setCustomValidity("Password must be at least 8 characters");
+    passwordError.textContent = "Password must be at least 8 characters";
+    passwordError.classList.add("show");
+    passwordInput.classList.add("input-error");
   });
+  
   passwordInput.addEventListener("input", () => {
+    passwordInput.setCustomValidity("");
     passwordError.textContent = "";
     passwordError.classList.remove("show");
     passwordInput.classList.remove("input-error");
   });
-  passwordInput.addEventListener("input", () => {
-    passwordInput.setCustomValidity("");
+  
+  // ================== PARALLAX ==================
+  document.addEventListener("mousemove", e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 20;
+    const y = (e.clientY / window.innerHeight - 0.5) * 20;
+    form.style.transform = `translate(${x}px, ${y}px)`;
   });
   
-  //Primary BTN
-  const form = document.querySelector(".form1");
-  const btnLogin = document.querySelector(".btn-primary");
-  if (form) {
-    document.addEventListener("mousemove", (e) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 20;
-      const y = (e.clientY / window.innerHeight - 0.5) * 20;
-      form.style.transform = `translate(${x}px, ${y}px)`;
-    });
-  }
-  
-  //SUBMIT
-  //Loading BTN
-  form.addEventListener("submit", async (e) => {
+  // ================== LOGIN ==================
+  form.addEventListener("submit", e => {
     e.preventDefault();
     if (!form.checkValidity()) return;
     
-    //UI loading
-    form.classList.add("is-loading");
-    btnLogin.classList.add("loading");
     btnLogin.disabled = true;
     btnLogin.textContent = "Verifying...";
+    form.classList.add("is-loading");
     
-    try {
-      const result = await AuthService.login(
-        emailInput.value,
-        passwordInput.value
-      );
-      
-      //SUCCESS
-      btnLogin.textContent = "Success ✓";
-      
-      const dashboard = document.querySelector(".dashboard");
-      form.classList.add("exit");
-      
-      setTimeout(() => {
-        form.style.display = "none";
-        dashboard.classList.add("show");
-      }, 600);
-      
-      console.log("TOKEN:", result.token);
-      
-    } catch (error) {
-      //ERROR
-      form.classList.remove("is-loading");
-      btnLogin.classList.remove("loading");
-      btnLogin.disabled = false;
-      btnLogin.textContent = error;
-      
-      form.classList.add("shake");
-      setTimeout(() => form.classList.remove("shake"), 400);
-    }
+    const savedUser = JSON.parse(localStorage.getItem("registeredUser"));
+    
+    setTimeout(() => {
+      if (
+        savedUser &&
+        emailInput.value === savedUser.email &&
+        passwordInput.value === savedUser.password
+      ) {
+        btnLogin.textContent = "Success ✓";
+        form.classList.add("exit");
+        
+        setTimeout(() => {
+          form.style.display = "none";
+          document.querySelector(".dashboard").classList.add("show");
+        }, 600);
+      } else {
+        btnLogin.disabled = false;
+btnLogin.textContent = "Sign In";
+form.classList.remove("is-loading");
+
+loginError.textContent = "Invalid Email or Password";
+loginError.classList.add("show");
+
+form.classList.add("shake");
+setTimeout(() => form.classList.remove("shake"), 400);
+      }
+    }, 1200);
   });
   
-  //Passw Security Show Bar
+  // ================== MOSTRAR REGISTER ==================
+  registerBtn.addEventListener("click", () => {
+    form.style.display = "none";
+    registerForm.style.display = "flex";
+  });
+  
+  // ================== VOLVER LOGIN ==================
+  backLoginBtn.addEventListener("click", () => {
+    registerForm.style.display = "none";
+    form.style.display = "flex";
+  });
+  
+  // ================== REGISTER ==================
+  registerForm.addEventListener("submit", e => {
+    e.preventDefault();
+    
+    const email = document.getElementById("reg-email").value;
+    const password = document.getElementById("reg-password").value;
+    const confirm = document.getElementById("reg-confirm").value;
+    const error = document.getElementById("reg-error");
+    
+    if (password !== confirm) {
+      error.textContent = "Passwords do not match";
+      error.classList.add("show");
+      return;
+    }
+    
+    localStorage.setItem(
+      "registeredUser",
+      JSON.stringify({ email, password })
+    );
+    
+    error.textContent = "";
+    registerForm.style.display = "none";
+    form.style.display = "flex";
+  });
+  
+  // ================== PASSWORD STRENGTH ==================
   const strengthBar = document.querySelector(".password-strength");
   
   if (strengthBar) {
@@ -172,27 +178,23 @@ document.addEventListener("DOMContentLoaded", () => {
       const value = passwordInput.value;
       let strength = 0;
       
-      if (value.length > 0) {
-        strengthBar.classList.add("visible");
-      } else {
+      if (!value) {
         strengthBar.className = "password-strength";
         return;
       }
       
+      strengthBar.classList.add("visible");
       if (value.length >= 8) strength++;
       if (/[A-Z]/.test(value)) strength++;
       if (/[0-9]/.test(value)) strength++;
       if (/[^A-Za-z0-9]/.test(value)) strength++;
       
       strengthBar.className = "password-strength visible";
-      
-      if (strength <= 1) {
-        strengthBar.classList.add("weak");
-      } else if (strength <= 3) {
-        strengthBar.classList.add("medium");
-      } else {
+      strength <= 1 ?
+        strengthBar.classList.add("weak") :
+        strength <= 3 ?
+        strengthBar.classList.add("medium") :
         strengthBar.classList.add("strong");
-      }
     });
   }
 });
