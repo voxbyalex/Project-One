@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   const form = document.querySelector(".form1");
   const btnLogin = document.querySelector(".btn-primary");
-  const registerBtn = document.querySelector(".btn-secundary");
+  const registerBtn = document.getElementById("show-register");
   
 //EMAIL VALIDATION
   const emailInput = document.getElementById("email");
@@ -123,32 +123,55 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   
   // ================== REGISTER ==================
-  registerBtn.addEventListener("click", async () => {
-    const email = prompt("Email:");
-    const password = prompt("Password (min 8 chars):");
-    const confirm = prompt("Confirm Password:");
+  const registerForm = document.querySelector(".register-form");
+const backLoginBtn = document.getElementById("back-login");
+
+// Mostrar formulario de registro
+registerBtn.addEventListener("click", () => {
+  form.style.display = "none";
+  registerForm.style.display = "flex";
+});
+
+// Volver al login
+backLoginBtn.addEventListener("click", () => {
+  registerForm.style.display = "none";
+  form.style.display = "flex";
+});
+
+// Submit register
+registerForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  
+  const email = document.getElementById("reg-email").value;
+  const password = document.getElementById("reg-password").value;
+  const confirm = document.getElementById("reg-confirm").value;
+  const error = document.getElementById("reg-error");
+  
+  if (password !== confirm) {
+    error.textContent = "Passwords do not match";
+    error.classList.add("show");
+    return;
+  }
+  
+  try {
+    const res = await fetch("/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
     
-    if (!email || !password || password !== confirm) {
-      alert("Invalid data");
-      return;
-    }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
     
-    try {
-      const res = await fetch("/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-      
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-      
-      alert("User registered. Now login.");
-      
-    } catch (err) {
-      alert(err.message);
-    }
-  });
+    registerForm.style.display = "none";
+    form.style.display = "flex";
+    error.textContent = "";
+    
+  } catch (err) {
+    error.textContent = err.message;
+    error.classList.add("show");
+  }
+});
   
   // ================== PASSWORD STRENGTH ==================
   const strengthBar = document.querySelector(".password-strength");
